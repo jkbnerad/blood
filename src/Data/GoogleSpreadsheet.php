@@ -8,6 +8,9 @@ use app\HttpClient;
 
 class GoogleSpreadsheet
 {
+    /**
+     * @var string
+     */
     private $jsonFileName = __DIR__ . '/../../data/blood.json';
 
     /**

@@ -27,26 +27,30 @@ class GoogleSpreadsheet extends TestCase
         $client = new HttpClient(['handler' => $handlerStack]);
 
         $tempFile = tempnam(sys_get_temp_dir(), 'gs');
-        $sheet = new \app\Data\GoogleSpreadsheet(new Config(), $client);
-        $sheet->saveCsvToJson($tempFile);
-        $dataFromFile = file_get_contents($tempFile);
-        if ($dataFromFile) {
-            $data = json_decode($dataFromFile, true);
-            $expected = [
-                [
-                    'col 1' => '1',
-                    'col 2' => '2',
-                ],
-                [
-                    'col 1' => '3',
-                    'col 2' => '4',
-                ],
-            ];
-            self::assertSame($expected, $data['data']);
-            self::assertArrayHasKey('expire', $data);
-            self::assertArrayHasKey('lastUpdate', $data);
+        if ($tempFile) {
+            $sheet = new \app\Data\GoogleSpreadsheet(new Config(), $client);
+            $sheet->saveCsvToJson($tempFile);
+            $dataFromFile = file_get_contents($tempFile);
+            if ($dataFromFile) {
+                $data = json_decode($dataFromFile, true);
+                $expected = [
+                    [
+                        'col 1' => '1',
+                        'col 2' => '2',
+                    ],
+                    [
+                        'col 1' => '3',
+                        'col 2' => '4',
+                    ],
+                ];
+                self::assertSame($expected, $data['data']);
+                self::assertArrayHasKey('expire', $data);
+                self::assertArrayHasKey('lastUpdate', $data);
+            } else {
+                throw new \RuntimeException('Output is empty.');
+            }
         } else {
-            throw new \Exception('Output is empty.');
+            throw new \RuntimeException('Tempfile expected.');
         }
 
         @unlink($tempFile);

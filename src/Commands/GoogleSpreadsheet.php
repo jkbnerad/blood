@@ -4,15 +4,12 @@ declare(strict_types=1);
 namespace app\Commands;
 
 use app\Config;
-use app\ContentLoaders\LoadContentHttp;
-use app\Data\GoogleSpreadsheet;
 use app\HttpClient;
-use app\Storage\GoogleSheet;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class GoogelSpreadsheet extends Command
+class GoogleSpreadsheet extends Command
 {
     protected static $defaultName = 'app:sheet';
 
@@ -24,7 +21,7 @@ class GoogelSpreadsheet extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $sheet = new GoogleSpreadsheet(new Config(), new HttpClient());
+        $sheet = new \app\Data\GoogleSpreadsheet(new Config(), new HttpClient());
 
         try {
             $sheet->saveCsvToJson();

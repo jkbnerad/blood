@@ -17,7 +17,9 @@ class Config
         if ($this->data === null) {
             $config = __DIR__ . '/../configs/config.neon';
             $data = file_get_contents($config);
-            $this->data = Neon::decode($data);
+            if ($data) {
+                $this->data = Neon::decode($data);
+            }
         }
     }
 

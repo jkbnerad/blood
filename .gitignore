@@ -1,0 +1,9 @@
+### Composer ###
+composer.phar
+/vendor/
+
+# PhpStorm
+.DS_Store
+.idea
+.phpunit
+tests/.phpunit.result.cache

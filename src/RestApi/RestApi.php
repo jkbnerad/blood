@@ -53,30 +53,25 @@ class RestApi
                 $this->sendResponse($api->run());
                 break;
             default:
-                $response = new Response();
-                $response->setCode(Response::S404_NOT_FOUND)->setBody(Json::encode(['message' => 'API pro darujukrev.cz.']));
+                $response = new \app\RestApi\Response(new Response());
+                $response->getResponse()->setCode(Response::S404_NOT_FOUND);
+                $response->setBody(Json::encode(['message' => 'API pro darujukrev.cz.']));
                 $this->sendResponse($response);
                 break;
         }
     }
 
-    private function sendResponse(IResponse $response): void
+    private function sendResponse(\app\RestApi\Response $response): void
     {
-        header('HTTP/' . $response->getProtocolVersion() . ' ' . $response->getCode() . ' ' . $response->getReasonPhrase());
+        header('HTTP/' . $response->getProtocolVersion() . ' ' . $response->getResponse()->getCode() . ' ' . $response->getReasonPhrase());
         header('Content-type: application/json;charset=utf-8');
         header('X-Time: ' . Debugger::timer('api'));
-        foreach ($response->getHeaders() as $headerName => $headerData) {
-            foreach ($headerData as $headerValue) {
-                header($headerName . ':' . $headerValue);
-            }
+        foreach ($response->getResponse()->getHeaders() as $headerName => $headerData) {
+            header($headerName . ':' . $headerData);
         }
         $body = $response->getBody();
-        if (is_string($body)) {
-            echo $body;
-            exit;
-        } else {
-            throw new \RuntimeException('Response body must be string.');
-        }
+        echo $body;
+        exit;
     }
 
     private function getMethod(): ?string

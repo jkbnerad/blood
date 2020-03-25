@@ -31,7 +31,7 @@ class Email
         $this->connection = $connection;
     }
 
-    public function run(): Response
+    public function run(): \app\RestApi\Response
     {
         $action = $this->getAction();
         $response = null;
@@ -67,7 +67,7 @@ class Email
         }
     }
 
-    private function sendError(int $code, ?string $message): Response
+    private function sendError(int $code, ?string $message): \app\RestApi\Response
     {
         switch ($code) {
             case Response::S409_CONFLICT:
@@ -84,8 +84,10 @@ class Email
                 break;
         }
 
-        $response = new Response();
-        $response->setCode($code);
+        $netteResponse = new Response();
+        $netteResponse->setCode($code);
+        $response = new \app\RestApi\Response($netteResponse);
+
         $body = [
             'status' => 'error',
             'code' => $code,
@@ -98,13 +100,16 @@ class Email
         }
 
         $response->setBody(Json::encode($body));
+
         return $response;
     }
 
-    private function sendOk(int $code, ?string $message): Response
+    private function sendOk(int $code, ?string $message): \app\RestApi\Response
     {
-        $response = new Response();
-        $response->setCode($code);
+        $netteResponse = new Response();
+        $netteResponse->setCode($code);
+        $response = new \app\RestApi\Response($netteResponse);
+
         $body = [
             'status' => 'ok',
             'type' => 'success',
@@ -115,6 +120,7 @@ class Email
             $body['message'] = $message;
         }
         $response->setBody(Json::encode($body));
+
         return $response;
     }
 

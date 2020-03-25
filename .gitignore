@@ -7,3 +7,5 @@ composer.phar
 .idea
 .phpunit
 tests/.phpunit.result.cache
+configs/database.ini
+configs/mailchimp.ini

@@ -1,3 +1,16 @@
 <?php
+declare(strict_types=1);
 
-echo 'It works!';
+use app\Application;
+use Tracy\Debugger;
+
+date_default_timezone_set('Europe/Prague');
+
+require __DIR__ . '/../vendor/autoload.php';
+
+Debugger::enable('62.201.28.178'); // 62.201.28.178 - home
+Debugger::$email = 'jakubnerad@gmail.com';
+
+
+$app = new Application((new \Nette\Http\RequestFactory())->fromGlobals());
+$app->run();

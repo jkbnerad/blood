@@ -1,0 +1,16 @@
+parameters:
+
+
+application:
+	errorPresenter: Error
+	mapping:
+		*: [web, Modules\*, Presenters\*Presenter]
+
+
+session:
+	expiration: 180 days
+
+
+services:
+	router: web\Router\RouterFactory::createRouter
+	emails: web\Models\Emails

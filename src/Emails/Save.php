@@ -28,7 +28,7 @@ class Save
             $exists = $this->connection->query('SELECT COUNT(*) FROM `Email` WHERE `emailHash`=?', $this->connection::expression('UNHEX(?)',$this->getEmailHash($email)))->fetchSingle();
             if ($exists === 0) {
                 $sql = 'INSERT INTO `Email`';
-                $this->connection->query($sql, ['email' => $email, 'tags' => $tag, 'emailHash' => $this->connection::expression('UNHEX(?)', $this->getEmailHash($email))]);
+                $this->connection->query($sql, ['email' => $email, 'tags' => $tag, 'date' => date('Y-m-d'), 'emailHash' => $this->connection::expression('UNHEX(?)', $this->getEmailHash($email))]);
                 $this->connection->commit();
                 return true;
             } else {

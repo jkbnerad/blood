@@ -17,7 +17,8 @@
   "autoload": {
     "psr-4": {
       "app\\": "src/",
-      "tests\\": "tests/"
+      "tests\\": "tests/",
+      "web\\": "web/"
     }
   },
   "minimum-stability": "dev",

@@ -47,7 +47,7 @@ class Email
                 try {
                     $save = new Save($this->connection);
                     // tag = hid -> back compatibility
-                    $saved = $save->save($postData['email'], $postData['tag'] ?? ($postData['hid'] ?? null));
+                    $saved = $save->save($postData['email'], $postData['tag'] ?? ($postData['hids'] ?? null));
                     if ($saved) {
                         return $this->sendOk(Response::S200_OK, 'Email has been saved.');
                     } else {

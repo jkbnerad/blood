@@ -8,6 +8,7 @@ use DrewM\MailChimp\MailChimp;
 
 class SendEmail
 {
+
     /**
      * @var \Dibi\Connection
      */
@@ -52,12 +53,12 @@ class SendEmail
 
     private function getEmailsToSend(int $limit = 100): array
     {
-        $sql = 'SELECT `email`, `tags` FROM `Email` WHERE `sentToMailchimp` IS NULL ORDER BY `emailId` ASC LIMIT ?';
+        $sql = 'SELECT `email`, `tags` FROM `Email` WHERE `sentToExternalService` IS NULL ORDER BY `emailId` ASC LIMIT ?';
         return $this->connection->query($sql, $limit)->fetchAll();
     }
 
     private function setAsSent(string $email): void
     {
-        $this->connection->query('UPDATE `Email` SET `sentToMailchimp` = NOW() WHERE `email` = ?', $email);
+        $this->connection->query('UPDATE `Email` SET `sentToExternalService` = NOW() WHERE `email` = ?', $email);
     }
 }

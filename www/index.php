@@ -8,7 +8,7 @@ date_default_timezone_set('Europe/Prague');
 
 require __DIR__ . '/../vendor/autoload.php';
 
-
+Debugger::$showBar = false;
 Debugger::enable('62.201.28.178', __DIR__ . '/../log'); // 62.201.28.178
 Debugger::$email = 'jakubnerad@gmail.com';
 

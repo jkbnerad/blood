@@ -5,6 +5,7 @@ namespace app\RestApi;
 
 
 use app\Database\Connection;
+use app\Emails\Confirm;
 use app\Emails\Exceptions\EmailExistsException;
 use app\Emails\Exceptions\EmailHasWrongFormatException;
 use app\Emails\Save;
@@ -55,12 +56,41 @@ class Email
                     }
                 } catch (EmailHasWrongFormatException $e) {
                     return $this->sendError(Response::S406_NOT_ACCEPTABLE, $e->getMessage());
-                } catch(EmailExistsException $e) {
+                } catch (EmailExistsException $e) {
                     return $this->sendError(Response::S409_CONFLICT, $e->getMessage());
                 }
 
             } else {
                 return $this->sendError(Response::S400_BAD_REQUEST, 'Param `email` expected.');
+            }
+
+        } elseif ($action === 'confirm' && $this->httpRequest->getMethod() === Request::GET) {
+            $confirm = new Confirm($this->connection);
+            $email = $this->httpRequest->getQuery('email');
+            $hash = $this->httpRequest->getQuery('hash');
+            if ($email && $hash) {
+                $confirmed = $confirm->confirm($email, $hash);
+                if ($confirmed) {
+                    return $this->sendOk(Response::S200_OK, 'Confirmed');
+                } else {
+                    return $this->sendError(Response::S400_BAD_REQUEST, null);
+                }
+            } else {
+                return $this->sendError(Response::S400_BAD_REQUEST, null);
+            }
+        } elseif ($action === 'unsubscribe' && $this->httpRequest->getMethod() === Request::POST) {
+            $confirm = new Confirm($this->connection);
+            $email = $this->httpRequest->getPost('email');
+            $hash = $this->httpRequest->getPost('hash');
+            if ($email && $hash) {
+                $confirmed = $confirm->unsubscribe($email, $hash);
+                if ($confirmed) {
+                    return $this->sendOk(Response::S200_OK, 'Unsubscribed');
+                } else {
+                    return $this->sendError(Response::S400_BAD_REQUEST, null);
+                }
+            } else {
+                return $this->sendError(Response::S400_BAD_REQUEST, null);
             }
         } else {
             return $this->sendError(Response::S404_NOT_FOUND, 'Action not found.');

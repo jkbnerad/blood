@@ -15,6 +15,7 @@ final class RouterFactory
     public static function createRouter(): RouteList
     {
         $router = new RouteList;
+        $router->addRoute('web/odhlasit-se/<action>[/<id>]', 'Unsubscribe:default');
         $router->addRoute('web/<presenter>/<action>[/<id>]', 'Homepage:default');
         return $router;
     }

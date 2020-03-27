@@ -10,3 +10,4 @@ tests/.phpunit.result.cache
 configs/database.ini
 configs/mailchimp.ini
 web/config/local.neon
+configs/klerk.ini

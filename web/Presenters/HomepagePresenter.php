@@ -33,7 +33,7 @@ class HomepagePresenter extends Presenter
     {
         $count = $this->emails->getCount();
         $countToday = $this->emails->getCountInterval(date('Y-m-d'), date('Y-m-d'));
-        $countYesterday = $this->emails->getCountInterval(date('Y-m-d'), date('Y-m-d'));
+        $countYesterday = $this->emails->getCountInterval(date('Y-m-d', strtotime('- 1 day')), date('Y-m-d', strtotime('- 1 day')));
         $lastSevenDays = $this->emails->getCountInterval(date('Y-m-d', strtotime('- 6 day')), date('Y-m-d'));
         $lastThirtyDays = $this->emails->getCountInterval(date('Y-m-d', strtotime('- 30 day')), date('Y-m-d'));
 

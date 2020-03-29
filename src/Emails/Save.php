@@ -21,14 +21,23 @@ class Save
         $this->connection = $connection->getConnection();
     }
 
-    public function save(string $email, ?string $tag): bool
+    public function save(string $email, ?string $tag, ?string $phone = null, ?string $bloodType = null): bool
     {
-        if (Validators::isEmail($email) && strlen($email) <= 255 && ($tag === null || strlen($tag) < 255)) {
+        if ($this->validateInputs($email, $tag, $phone, $bloodType) === true) {
             $this->connection->begin();
-            $exists = $this->connection->query('SELECT COUNT(*) FROM `Email` WHERE `emailHash`=?', $this->connection::expression('UNHEX(?)',$this->getEmailHash($email)))->fetchSingle();
+            $exists = $this->connection->query('SELECT COUNT(*) FROM `Email` WHERE `emailHash`=?',
+                $this->connection::expression('UNHEX(?)', $this->getEmailHash($email)))->fetchSingle();
             if ($exists === 0) {
                 $sql = 'INSERT INTO `Email`';
-                $this->connection->query($sql, ['email' => $email, 'tags' => $tag, 'date' => date('Y-m-d'), 'emailHash' => $this->connection::expression('UNHEX(?)', $this->getEmailHash($email))]);
+                $data = [
+                    'email' => $email,
+                    'tags' => $tag,
+                    'date' => date('Y-m-d'),
+                    'emailHash' => $this->connection::expression('UNHEX(?)', $this->getEmailHash($email)),
+                    'phone' => $phone,
+                    'bloodType' => $bloodType
+                ];
+                $this->connection->query($sql, $data);
                 $this->connection->commit();
                 return true;
             } else {
@@ -42,6 +51,32 @@ class Save
     public function getEmailHash(string $email): string
     {
         return sha1($email . self::EMAIL_HASH_SALT);
+    }
+
+    private function validateInputs(string $email, ?string $tag, ?string $phone = null, ?string $bloodType = null): bool
+    {
+        if(!Validators::isEmail($email)) {
+           return false;
+        }
+
+        if (strlen($email) > 255) {
+            return false;
+        }
+
+        if($tag !== null && strlen($tag) > 255) {
+            return false;
+        }
+
+        if ($phone !== null && strlen($phone) > 255) {
+            return false;
+        }
+
+        if ($bloodType !== null && strlen($bloodType) > 255) {
+            return false;
+        }
+
+        return true;
+
     }
 
 }

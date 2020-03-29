@@ -6,8 +6,12 @@ namespace app\RestApi;
 
 use app\Database\Connection;
 use app\Emails\Confirm;
+use app\Emails\Exceptions\BloodTypeHasWrongFormatException;
 use app\Emails\Exceptions\EmailExistsException;
 use app\Emails\Exceptions\EmailHasWrongFormatException;
+use app\Emails\Exceptions\PhoneHasWrongFormatException;
+use app\Emails\Exceptions\TagWrongFormatException;
+use app\Emails\Exceptions\UnknownException;
 use app\Emails\Save;
 use Nette\Http\IRequest;
 use Nette\Http\Request;
@@ -50,8 +54,8 @@ class Email
                     // tag = hid -> back compatibility
                     $email = $postData['email'];
                     $hids = $postData['tag'] ?? ($postData['hids'] ?? null); // tag - is old param name, back compatibility
-                    $phone = $postData['phone'] ?? null;
-                    $bloodType = $postData['bloodType'] ?? null;
+                    $phone = (isset($postData['phone']) && $postData['phone'] !== '') ? $postData['phone'] : null;
+                    $bloodType = (isset($postData['bloodType']) && $postData['bloodType'] !== '') ? $postData['bloodType'] : null;
 
                     $saved = $save->save($email, $hids, $phone, $bloodType);
                     if ($saved) {
@@ -59,10 +63,12 @@ class Email
                     } else {
                         return $this->sendError(Response::S400_BAD_REQUEST, 'Unexpected error.');
                     }
-                } catch (EmailHasWrongFormatException $e) {
+                } catch (EmailHasWrongFormatException | BloodTypeHasWrongFormatException | PhoneHasWrongFormatException | TagWrongFormatException $e) {
                     return $this->sendError(Response::S406_NOT_ACCEPTABLE, $e->getMessage());
                 } catch (EmailExistsException $e) {
                     return $this->sendError(Response::S409_CONFLICT, $e->getMessage());
+                } catch (UnknownException $e) {
+                    return $this->sendError(Response::S404_NOT_FOUND, $e->getMessage());
                 }
 
             } else {

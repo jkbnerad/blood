@@ -4,8 +4,11 @@ declare(strict_types = 1);
 namespace app\Emails;
 
 use app\Database\Connection;
+use app\Emails\Exceptions\BloodTypeHasWrongFormatException;
 use app\Emails\Exceptions\EmailExistsException;
 use app\Emails\Exceptions\EmailHasWrongFormatException;
+use app\Emails\Exceptions\PhoneHasWrongFormatException;
+use app\Emails\Exceptions\UnknownException;
 use Nette\Utils\Validators;
 
 class Save
@@ -23,7 +26,7 @@ class Save
 
     public function save(string $email, ?string $tag, ?string $phone = null, ?string $bloodType = null): bool
     {
-        if ($this->validateInputs($email, $tag, $phone, $bloodType) === true) {
+        if ($this->checkInputs($email, $tag, $phone, $bloodType) === true) {
             $this->connection->begin();
             $exists = $this->connection->query('SELECT COUNT(*) FROM `Email` WHERE `emailHash`=?',
                 $this->connection::expression('UNHEX(?)', $this->getEmailHash($email)))->fetchSingle();
@@ -44,7 +47,7 @@ class Save
                 throw new EmailExistsException(sprintf('Email %s exists.', $email));
             }
         } else {
-            throw new EmailHasWrongFormatException('Correct email address expected.');
+            throw new UnknownException('Unknown error.');
         }
     }
 
@@ -53,30 +56,29 @@ class Save
         return sha1($email . self::EMAIL_HASH_SALT);
     }
 
-    private function validateInputs(string $email, ?string $tag, ?string $phone = null, ?string $bloodType = null): bool
+    private function checkInputs(string $email, ?string $tag, ?string $phone = null, ?string $bloodType = null): bool
     {
-        if(!Validators::isEmail($email)) {
-           return false;
+        if (!Validators::isEmail($email)) {
+            throw new EmailHasWrongFormatException('Email is empty or has wrong format.');
         }
 
         if (strlen($email) > 255) {
-            return false;
+            throw new EmailHasWrongFormatException('Email is too long.');
         }
 
-        if($tag !== null && strlen($tag) > 255) {
-            return false;
+        if ($tag !== null && strlen($tag) > 255) {
+            throw new EmailHasWrongFormatException('Tag is too long.');
         }
 
         if ($phone !== null && strlen($phone) > 255) {
-            return false;
+            throw new PhoneHasWrongFormatException('Phone has wrong format.');
         }
 
         if ($bloodType !== null && strlen($bloodType) > 255) {
-            return false;
+            throw new BloodTypeHasWrongFormatException('Blood type is too long.');
         }
 
         return true;
-
     }
 
 }

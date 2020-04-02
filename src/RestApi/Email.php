@@ -4,6 +4,9 @@ declare(strict_types = 1);
 namespace app\RestApi;
 
 
+use app\Azure\EventGrid\Client;
+use app\Azure\EventGrid\Event;
+use app\Azure\EventGrid\Hash;
 use app\Database\Connection;
 use app\Emails\Confirm;
 use app\Emails\Exceptions\BloodTypeHasWrongFormatException;
@@ -13,6 +16,8 @@ use app\Emails\Exceptions\PhoneHasWrongFormatException;
 use app\Emails\Exceptions\TagWrongFormatException;
 use app\Emails\Exceptions\UnknownException;
 use app\Emails\Save;
+use app\Emails\SendToKlerk;
+use app\Klerk\Klerk;
 use Nette\Http\IRequest;
 use Nette\Http\Request;
 use Nette\Http\Response;
@@ -59,6 +64,9 @@ class Email
 
                     $saved = $save->save($email, $hids, $phone, $bloodType);
                     if ($saved) {
+                        $eventGrid = new Event(new Client());
+                        $eventGrid->send($email, $hids);
+
                         return $this->sendOk(Response::S200_OK, 'Email has been saved.');
                     } else {
                         return $this->sendError(Response::S400_BAD_REQUEST, 'Unexpected error.');
@@ -103,6 +111,29 @@ class Email
             } else {
                 return $this->sendError(Response::S400_BAD_REQUEST, null);
             }
+        } elseif ($action === 'send') {
+            $body = $this->httpRequest->getRawBody();
+            $bodyArr = json_decode($body, true);
+            $netteResponse = new Response();
+            $netteResponse->setCode(200);
+            $response = new \app\RestApi\Response($netteResponse);
+
+            if (isset($bodyArr[0]['validationCode'])) {
+                $response->setBody(Json::encode(['ValidationResponse' => $bodyArr[0]['data']['validationCode']]));
+            }
+
+            if (isset($bodyArr[0]['data']['email'])) {
+                $email = $bodyArr[0]['data']['email'];
+                $hash = $bodyArr[0]['data']['hash'];
+                $tags = $bodyArr[0]['data']['tags'];
+                $klerk = new SendToKlerk($this->connection);
+                if ($hash === Hash::getHash($email)) {
+                    $klerk->sendSingle(new Confirm($this->connection), $email, $tags);
+                }
+            }
+
+            return $response;
+
         } else {
             return $this->sendError(Response::S404_NOT_FOUND, 'Action not found.');
         }

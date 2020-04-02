@@ -6,7 +6,6 @@ namespace app\RestApi;
 
 use app\Database\Connection;
 use Nette\Http\IRequest;
-use Nette\Http\IResponse;
 use Nette\Http\Response;
 use Nette\Utils\Json;
 use Tracy\Debugger;

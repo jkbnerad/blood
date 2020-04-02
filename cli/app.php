@@ -3,6 +3,7 @@ declare(strict_types=1);
 umask(0002);
 date_default_timezone_set('Europe/Prague');
 
+use app\Commands\EventGrid;
 use app\Commands\GoogleSpreadsheet;
 use app\Commands\Klerk;
 use app\Commands\Mailchimp;
@@ -21,5 +22,5 @@ $app->add(new GoogleSpreadsheet());
 $app->add(new Mailchimp());
 $app->add(new Klerk());
 $app->add(new TestEmail());
-
+$app->add(new EventGrid());
 $app->run();

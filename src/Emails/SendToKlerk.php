@@ -51,6 +51,24 @@ class SendToKlerk
         }
     }
 
+    public function sendSingle(Confirm $confirm, string $email, ?string $tags = null): void
+    {
+        $config = parse_ini_file(__DIR__ . '/../../configs/klerk.ini');
+        if (!$config || empty($config['apiKey'])) {
+            throw new \RuntimeException('Missing apiKey.');
+        }
+        $klerk = new Klerk(new HttpClient($config['apiKey']));
+
+        $emailAddr = $email;
+        $tagsArr = explode(',', $tags ?: '');
+        $save = $klerk->contact()->create($emailAddr, '', '', $tagsArr ?: []);
+        if (!$save) {
+            Debugger::log('Email was not save to kler: ' . $emailAddr, Debugger::CRITICAL);
+        }
+        $this->setAsSent($emailAddr);
+        $confirm->sendConfirmEmail($emailAddr);
+    }
+
     private function getEmailsToSend(int $limit = 100): array
     {
         $sql = 'SELECT `email`, `tags` FROM `Email` WHERE `sentToExternalService` IS NULL ORDER BY `emailId` ASC LIMIT ?';

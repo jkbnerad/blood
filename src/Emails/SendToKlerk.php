@@ -7,8 +7,11 @@ namespace app\Emails;
 use app\Database\Connection;
 use app\Klerk\HttpClient;
 use app\Klerk\Klerk;
+use Sentry\SentrySdk;
+use Sentry\Severity;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tracy\Debugger;
+use function Sentry\captureMessage;
 
 class SendToKlerk
 {
@@ -42,7 +45,7 @@ class SendToKlerk
                     $output->writeln('Sent');
                 } else {
                     $output->writeln('Error: ' . $emailAddr);
-                    Debugger::log('Email was not sent: ' . $emailAddr, Debugger::CRITICAL);
+                    captureMessage('Email was not sent: ' . $emailAddr, Severity::error());
                 }
                 $this->setAsSent($emailAddr);
                 $confirm->sendConfirmEmail($emailAddr);
@@ -63,7 +66,7 @@ class SendToKlerk
         $tagsArr = explode(',', $tags ?: '');
         $save = $klerk->contact()->create($emailAddr, '', '', $tagsArr ?: []);
         if (!$save) {
-            Debugger::log('Email was not save to kler: ' . $emailAddr, Debugger::CRITICAL);
+            captureMessage('Email was not save to klerk: ' . $emailAddr, Severity::error());
         }
         $this->setAsSent($emailAddr);
         $confirm->sendConfirmEmail($emailAddr);

@@ -10,6 +10,7 @@ use Latte\Engine;
 use Nette\Mail\Message;
 use Nette\Mail\SmtpException;
 use Tracy\Debugger;
+use function Sentry\captureException;
 
 class Confirm
 {
@@ -104,7 +105,7 @@ class Confirm
         try {
             $mailer->send($message);
         } catch (SmtpException $e) {
-            Debugger::log($e, Debugger::CRITICAL);
+            captureException($e);
         }
     }
 

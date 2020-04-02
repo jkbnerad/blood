@@ -7,7 +7,7 @@ namespace app\Azure\EventGrid;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\RequestOptions;
-use Tracy\Debugger;
+use function Sentry\captureException;
 
 class Event
 {
@@ -45,7 +45,7 @@ class Event
                 return true;
             }
         } catch (BadResponseException | ConnectException $e) {
-            Debugger::log($e, Debugger::CRITICAL);
+            captureException($e);
         }
 
         return false;

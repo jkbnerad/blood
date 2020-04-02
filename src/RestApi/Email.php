@@ -17,7 +17,6 @@ use app\Emails\Exceptions\TagWrongFormatException;
 use app\Emails\Exceptions\UnknownException;
 use app\Emails\Save;
 use app\Emails\SendToKlerk;
-use app\Klerk\Klerk;
 use Nette\Http\IRequest;
 use Nette\Http\Request;
 use Nette\Http\Response;
@@ -115,10 +114,10 @@ class Email
             $body = $this->httpRequest->getRawBody();
             $bodyArr = json_decode($body, true);
             $netteResponse = new Response();
-            $netteResponse->setCode(200);
             $response = new \app\RestApi\Response($netteResponse);
 
-            if (isset($bodyArr[0]['validationCode'])) {
+            if (isset($bodyArr[0]['data']['validationCode'])) {
+                $response->getResponse()->setCode(200);
                 $response->setBody(Json::encode(['ValidationResponse' => $bodyArr[0]['data']['validationCode']]));
             }
 
@@ -128,7 +127,10 @@ class Email
                 $tags = $bodyArr[0]['data']['tags'];
                 $klerk = new SendToKlerk($this->connection);
                 if ($hash === Hash::getHash($email)) {
+                    $response->getResponse()->setCode(200);
                     $klerk->sendSingle(new Confirm($this->connection), $email, $tags);
+                } else {
+                    $response->getResponse()->setCode(Response::S406_NOT_ACCEPTABLE);
                 }
             }
 

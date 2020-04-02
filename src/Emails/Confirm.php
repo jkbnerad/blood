@@ -8,6 +8,8 @@ use app\Klerk\HttpClient;
 use app\Klerk\Klerk;
 use Latte\Engine;
 use Nette\Mail\Message;
+use Nette\Mail\SmtpException;
+use Tracy\Debugger;
 
 class Confirm
 {
@@ -98,7 +100,12 @@ class Confirm
         $latte = new Engine();
         $mailParam = ['email' => $email, 'hash' => $this->getEmailHash($email, $config['confirmSalt'])];
         $message->setHtmlBody($latte->renderToString(__DIR__ . '/Templates/confirm.latte', $mailParam));
-        $mailer->send($message);
+
+        try {
+            $mailer->send($message);
+        } catch (SmtpException $e) {
+            Debugger::log($e, Debugger::CRITICAL);
+        }
     }
 
     public function sendTestEmail(): void

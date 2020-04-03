@@ -21,9 +21,16 @@ use Nette\Http\IRequest;
 use Nette\Http\Request;
 use Nette\Http\Response;
 use Nette\Utils\Json;
+use Tracy\Debugger;
 
 class Email
 {
+
+    /**
+     * @var array
+     */
+    private static $time = ['eventgrid' => 0, 'all' => 0];
+
     /**
      * @var IRequest
      */
@@ -54,6 +61,7 @@ class Email
 
             if (isset($postData['email'])) {
                 try {
+                    Debugger::timer('all');
                     $save = new Save($this->connection);
                     // tag = hid -> back compatibility
                     $email = $postData['email'];
@@ -63,8 +71,11 @@ class Email
 
                     $saved = $save->save($email, $hids, $phone, $bloodType);
                     if ($saved) {
+                        Debugger::timer('eventgrid');
                         $eventGrid = new Event(new Client());
                         $eventGrid->send($email, $hids);
+                        self::$time['eventgrid'] = Debugger::timer('eventgrid');
+                        self::$time['all'] = Debugger::timer('all');
 
                         return $this->sendOk(Response::S200_OK, 'Email has been saved.');
                     } else {
@@ -188,7 +199,8 @@ class Email
             'status' => 'ok',
             'type' => 'success',
             'code' => $code,
-            'message' => ''
+            'message' => '',
+            'time' => self::$time
         ];
         if ($message) {
             $body['message'] = $message;
